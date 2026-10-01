@@ -182,33 +182,3 @@ defTS({ id: 'ts-transform', topic: 'turning and reflecting', fam: 'Space and sha
     };
   } });
 
-/* ---- cubes seen from above: count or match a top view ---- */
-defTS({ id: 'ts-top-view', topic: 'views of solids', fam: 'Space and shape',
-  gen(R, level) {
-    const rows = byLevel(level, 2, 3, 3), cols = byLevel(level, 3, 3, 4);
-    const hts = range(1, rows).map(() => range(1, cols).map(() => R.int(0, 3)));
-    if (hts.flat().filter(h => h > 0).length < 4) return this.gen(R, level);
-    // non-increasing to the back for a clean drawing
-    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) { if (r > 0) hts[r][c] = Math.min(hts[r][c], hts[r - 1][c] || 3); }
-    const top = []; hts.forEach((row, r) => row.forEach((h, c) => { if (h > 0) top.push([c, r]); }));
-    const N = Math.max(rows, cols);
-    const sig = cs => cs.map(x => x.join(',')).sort().join(';');
-    const flip = cs => cs.map(([x, y]) => [cols - 1 - x, y]);
-    const flipV = cs => cs.map(([x, y]) => [x, rows - 1 - y]);
-    const drop = cs => cs.slice(1);
-    const add = cs => { const free = []; for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) if (!cs.some(p => p[0] === c && p[1] === r)) free.push([c, r]); return free.length ? cs.concat([R.pick(free)]) : cs; };
-    const ws = [{ H: flip(top), why: 'is the view from below, reversed left to right', tag: 'spatial' }, { H: flipV(top), why: 'swaps the front and back rows', tag: 'spatial' },
-      { H: drop(top), why: 'misses a column of cubes', tag: 'spatial' }, { H: add(top), why: 'shows a square with no cubes', tag: 'spatial' }];
-    const seen = new Set([sig(top)]);
-    const w3 = ws.filter(w => { const k = sig(w.H); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 3);
-    if (w3.length < 3) return this.gen(R, level);
-    const all = R.shuffle([{ H: top, ok: true }].concat(w3));
-    const gsvg = H => gridSvg(cols, rows, H.map(([x, y]) => [x, y, 'a']), { cell: 22 });
-    return {
-      stem: 'Cubes are stacked on a grid, as shown. The front of the grid is the row nearest you. Which picture shows the squares covered by cubes when the stack is seen from directly above (front row at the bottom of the picture)?',
-      svg: cubeStackSvg(hts.slice().reverse().map(r => r.slice().reverse())),
-      options: all.map((_, i) => 'option ' + LETTERS[i]), optionSvgs: all.map(x => gsvg(x.H.map(([c, r]) => [c, rows - 1 - r]).map(([c, r]) => [c, r]))),
-      answer: all.findIndex(x => x.ok), whys: all.map(x => x.ok ? null : x.why), tags: all.map(x => x.ok ? null : x.tag),
-      explain: 'From above, every square that has at least one cube on it is covered, however tall the stack. Match each column of cubes to its square.',
-    };
-  } });

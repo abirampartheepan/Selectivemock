@@ -102,7 +102,7 @@ function buildMathsExam(id, tier, salt) {
    ========================================================================== */
 const TS_PUZZLE_ORDER = ['ts-order-line', 'ts-exchange', 'ts-must-be-true', 'ts-letter-position', 'ts-cube-net', 'ts-token-piles',
   'ts-whose-formal', 'ts-circle', 'ts-cipher', 'ts-transform', 'ts-target', 'ts-switches', 'ts-venn', 'ts-which-question',
-  'ts-paper-punch', 'ts-symbol-string', 'ts-liar', 'ts-word-chain', 'ts-top-view', 'ts-tournament', 'ts-letter-cards',
+  'ts-paper-punch', 'ts-symbol-string', 'ts-liar', 'ts-word-chain', 'ts-transform', 'ts-tournament', 'ts-letter-cards',
   'ts-ages', 'ts-at-least', 'ts-whose-formal'];
 // written (C) and puzzle (P) slots, interleaved as the real paper mixes them
 const TS_PATTERN = 'PCPCPPCPCPPCPCPPCPCPPCPCPPCPCPPCPCPCPPCP'.split('');
@@ -192,6 +192,7 @@ function buildExamModule(id, module) {
     for (let t = 0; t < 8; t++) {
       const p = module === 'maths' ? buildMathsExam(id, ex.tier, t) : module === 'thinking' ? buildThinkingExam(id, ex.tier, t) : buildReadingExam(id);
       const R = examRng(id, module + '-key', t);
+      p.items.forEach(it => { if (it.shufflable) permuteOptions(it, R); });
       const audit = repairKey(p, SPEC[module].opts, R);
       const v = audit.hard.length * 100 + audit.soft.length;
       if (v < bestScore) { bestScore = v; best = { p, audit }; }

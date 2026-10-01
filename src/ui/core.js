@@ -170,8 +170,9 @@ function renderFeedback(it, given, key) {
   const parts = [];
   if (given != null && given !== it.answer) {
     const why = it.whys && it.whys[given];
-    const optTxt = it.optionSvgs ? `option ${LETTERS[given]}` : `${LETTERS[given]} (${esc(it.options[given])})`;
-    parts.push(`<div class="yourpick"><span class="eyebrow">Your answer</span>You chose ${optTxt}${why ? `, which ${esc(why)}` : ''}.</div>`);
+    const optTxt = it.optionSvgs ? `option ${LETTERS[given]}` : `${LETTERS[given]} (${esc(String(it.options[given]).replace(/[.]$/, ''))})`;
+    const reason = !why ? '.' : it.kind === 'gen' ? `, which ${esc(why)}.` : `. Not quite: ${esc(why)}.`;
+    parts.push(`<div class="yourpick"><span class="eyebrow">Your answer</span>You chose ${optTxt}${reason}</div>`);
   } else if (given == null) {
     parts.push(`<div class="yourpick"><span class="eyebrow">Your answer</span>You left this blank. A guess costs nothing on the real test, so always choose something.</div>`);
   }
